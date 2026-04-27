@@ -1,0 +1,11 @@
+patient_id,first_name,last_name,dob,gender,phone,email,street,city,state,zip
+PA001,John,Smith,12-03-1985,male,555-101-2020,john.smith@email.com,12 Oak Ave,Boston,MA,2101
+PA002,Maria,Garcia,25-07-1990,female,555-202-3030,maria.g@email.com,45 Elm St,Austin,TX,78701
+PA003,Robert,Johnson,08-11-1978,male,555-303-4040,rob.johnson@email.com,78 Maple Dr,Chicago,IL,60601
+PA004,Linda,Williams,30-05-2001,female,555-404-5050,linda.w@email.com,200 Pine Rd,Seattle,WA,98101
+PA005,James,Brown,17-09-1963,male,555-505-6060,james.brown@email.com,5 Birch Ln,Denver,CO,80201
+PA006,Patricia,Davis,02-12-1995,female,555-606-7070,patty.d@email.com,330 Cedar Blvd,Miami,FL,33101
+PA007,Michael,Martinez,19-04-1970,male,555-707-8080,m.martinez@email.com,67 Walnut St,Phoenix,AZ,85001
+PA008,Barbara,Wilson,14-08-1988,female,555-808-9090,barb.wilson@email.com,14 Spruce Ave,Portland,OR,97201
+PA009,William,Taylor,28-01-1955,male,555-909-1010,will.taylor@email.com,99 Ash Ct,Nashville,TN,37201
+PA010,Susan,Anderson,05-06-2000,male,555-010-2020,susan.a@email.com,21 Poplar Way,Atlanta,GA,30301
