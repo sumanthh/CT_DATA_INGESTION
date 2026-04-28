@@ -18,6 +18,6 @@ echo Starting Spring Boot in DEBUG mode on port 5005...
 
 "C:\Program Files\Microsoft\jdk-17.0.17.10-hotspot\bin\java" ^
 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 ^
--Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" -jar .\build\libs\FHIR-0.0.1-SNAPSHOT.jar
+-Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" -jar -Dspring.profiles.active=ingestion .\build\libs\CT_DATA_INGESTION-1.0.jar
 
 goto :eof

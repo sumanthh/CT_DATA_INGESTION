@@ -15,5 +15,5 @@ for /f "usebackq delims" %%p in ('%psCommand%') do set lid=%%p
 
 :thecommand
   @rem ./gradlew :app-liberty:libertyRun --no-daemon
-  "C:\Program Files\Microsoft\jdk-17.0.17.10-hotspot\bin\java" -jar -Dspring.profiles.active=local .\build\libs\FHIR-1.0.jar
+  "C:\Program Files\Microsoft\jdk-17.0.17.10-hotspot\bin\java" -jar -Dspring.profiles.active=ingestion .\build\libs\CT_DATA_INGESTION-1.0.jar
 goto:eof
