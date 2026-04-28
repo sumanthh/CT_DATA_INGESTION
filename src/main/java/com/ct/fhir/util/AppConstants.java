@@ -41,5 +41,10 @@ public class AppConstants {
     public static final String POSTALCODE = "postalCode";
     public static final String ADDRESS = "address";
 
-
+    public static final String BUNDLE = "Bundle";
+    public static final String COLLECTION = "collection";
+    public static final String TYPE = "type";
+    public static final String TOTAL = "total";
+    public static final String ENTRY = "entry";
+    public static final String RESOURCE = "resource";
 }

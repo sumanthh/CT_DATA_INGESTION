@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -32,48 +33,6 @@ class PatientServiceImplTest {
 
     @InjectMocks
     private PatientServiceImpl service;
-
-
-    @Test
-    void getAllPatientsSourceIsNull() {
-
-        PatientEntity entity = buildPatient("PA001", "SOURCE_A");
-        Map<String, Object> fhirPatient =
-                Map.of("resourceType", "Patient", "id", "PA001");
-
-        when(repository.findAll()).thenReturn(List.of(entity));
-        when(mapper.toFhir(entity)).thenReturn(fhirPatient);
-
-        List<Map<String, Object>> result =
-                service.getAllPatients(null);
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).get("id")).isEqualTo("PA001");
-
-        verify(repository).findAll();
-        verify(mapper).toFhir(entity);
-    }
-
-
-    @Test
-    void getAllPatientsSourceProvided() {
-
-        PatientEntity entity = buildPatient("PA002", "SOURCE_A");
-        Map<String, Object> fhirPatient =
-                Map.of("resourceType", "Patient", "id", "PA002");
-
-        when(repository.findBySource("SOURCE_A"))
-                .thenReturn(List.of(entity));
-        when(mapper.toFhir(entity)).thenReturn(fhirPatient);
-
-        List<Map<String, Object>> result =
-                service.getAllPatients("SOURCE_A");
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).get("id")).isEqualTo("PA002");
-
-        verify(repository).findBySource("SOURCE_A");
-    }
 
     @Test
     void getPatientById_success() {
@@ -101,7 +60,6 @@ class PatientServiceImplTest {
 
     @Test
     void getPatientByIdPatientInvalid() {
-
         when(repository.findById("INVALID"))
                 .thenReturn(Optional.empty());
 
@@ -114,6 +72,53 @@ class PatientServiceImplTest {
         verifyNoInteractions(mapper);
     }
 
+    @Test
+    void getAllBundlePatients_shouldReturnBundleInsideList() {
+        PatientEntity p1 = new PatientEntity();
+        p1.setId("PA001");
+
+        PatientEntity p2 = new PatientEntity();
+        p2.setId("PA002");
+
+        Mockito.when(repository.findAll())
+                .thenReturn(List.of(p1, p2));
+
+        Map<String, Object> fhir1 = Map.of(
+                "resourceType", "Patient",
+                "id", "PA001"
+        );
+
+        Map<String, Object> fhir2 = Map.of(
+                "resourceType", "Patient",
+                "id", "PA002"
+        );
+
+        Mockito.when(mapper.toFhir(p1)).thenReturn(fhir1);
+        Mockito.when(mapper.toFhir(p2)).thenReturn(fhir2);
+        List<Map<String, Object>> result = service.getAllBundlePatients(null);
+        assertThat(result).hasSize(1);
+        Map<String, Object> bundle = result.get(0);
+        assertThat(bundle.get("resourceType")).isEqualTo("Bundle");
+        assertThat(bundle.get("type")).isEqualTo("collection");
+        assertThat(bundle.get("total")).isEqualTo(2);
+
+        List<Map<String, Object>> entries =
+                (List<Map<String, Object>>) bundle.get("entry");
+
+        assertThat(entries).hasSize(2);
+
+        Map<String, Object> entry1 = entries.get(0);
+        Map<String, Object> resource1 =
+                (Map<String, Object>) entry1.get("resource");
+
+        assertThat(resource1.get("id")).isEqualTo("PA001");
+
+        Map<String, Object> entry2 = entries.get(1);
+        Map<String, Object> resource2 =
+                (Map<String, Object>) entry2.get("resource");
+
+        assertThat(resource2.get("id")).isEqualTo("PA002");
+    }
 
     private PatientEntity buildPatient(String id, String source) {
         PatientEntity p = new PatientEntity();

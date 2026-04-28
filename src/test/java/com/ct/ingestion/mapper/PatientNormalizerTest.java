@@ -75,6 +75,103 @@ class PatientNormalizerTest {
     }
 
     @Test
+    void fromSourceA_allFields() {
+        Map<String, String> raw = Map.of(
+                "patient_id", "PA003",
+                "SOURCE", "SOURCE_A",
+                "first_name", "Alice",
+                "last_name", "Brown",
+                "dob", "1990-06-15",
+                "gender", "female",
+                "phone", "555-9999",
+                "email", "alice@test.com",
+                "street", "10 Elm St",
+                "city", "Chicago"
+        );
+
+        PatientEntity entity = normalizer.fromSourceA(raw);
+
+        assertThat(entity.getBirthDate()).isEqualTo("1990-06-15");
+        assertThat(entity.getGender()).isEqualTo("female");
+        assertThat(entity.getPhone()).isEqualTo("555-9999");
+        assertThat(entity.getEmail()).isEqualTo("alice@test.com");
+        assertThat(entity.getAddressLine()).isEqualTo("10 Elm St");
+        assertThat(entity.getCity()).isEqualTo("Chicago");
+    }
+
+    @Test
+    void normalizeGender_nullValue_returnsUnknown() {
+        Map<String, String> raw = Map.of(
+                "patient_id", "PA004",
+                "first_name", "Sam",
+                "last_name", "Lee"
+        );
+
+        PatientEntity entity = normalizer.fromSourceA(raw);
+
+        assertThat(entity.getGender()).isEqualTo("unknown");
+    }
+
+    @Test
+    void normalizeGender_longFormMale_returnsMale() {
+        Map<String, String> raw = Map.of(
+                "patient_id", "PA005",
+                "first_name", "Tom",
+                "last_name", "Jones",
+                "gender", "MALE"
+        );
+
+        assertThat(normalizer.fromSourceA(raw).getGender()).isEqualTo("male");
+    }
+
+    @Test
+    void normalizeGender_longFormFemale_returnsFemale() {
+        Map<String, String> raw = Map.of(
+                "patient_id", "PA006",
+                "first_name", "Nina",
+                "last_name", "Ross",
+                "gender", "FEMALE"
+        );
+
+        assertThat(normalizer.fromSourceA(raw).getGender()).isEqualTo("female");
+    }
+
+    @Test
+    void fromSourceB_genderF_returnsFemale() {
+        Map<String, String> raw = Map.of(
+                "id", "PB003",
+                "full_name", "Laura Hill",
+                "birth_date", "10/05/1985",
+                "sex", "F",
+                "contact_number", "555-4040",
+                "addr_line", "5 Maple Ave",
+                "addr_city", "Austin",
+                "addr_state", "TX"
+        );
+
+        assertThat(normalizer.fromSourceB(raw).getGender()).isEqualTo("female");
+    }
+
+    @Test
+    void fromSourceB_genderM_returnsMale() {
+        Map<String, String> raw = Map.of(
+                "id", "PB004",
+                "full_name", "Mark Stone",
+                "birth_date", "15/08/1978",
+                "sex", "M",
+                "contact_number", "555-5050",
+                "addr_line", "9 River Rd",
+                "addr_city", "Denver",
+                "addr_state", "CO"
+        );
+
+        PatientEntity entity = normalizer.fromSourceB(raw);
+
+        assertThat(entity.getGender()).isEqualTo("male");
+        assertThat(entity.getBirthDate()).isEqualTo("1978-08-15");
+    }
+
+    @Test
     void fromSourceBSingleName() {
 
         Map<String, String> raw = Map.of(

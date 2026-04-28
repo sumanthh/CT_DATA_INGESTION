@@ -49,12 +49,72 @@ class SourceBPatientParserTest {
     }
 
     @Test
-    void parseRuntimeException() {
+    void parse_headerOnly_returnsEmptyList() throws Exception {
+        String tsvData = "id\tfull_name\tbirth_date\tsex\tcontact_number\taddr_line\taddr_city\taddr_state\n";
+
+        try (MockedConstruction<ClassPathResource> mocked =
+                     mockConstruction(ClassPathResource.class,
+                             (mock, context) -> when(mock.getInputStream())
+                                     .thenReturn(new ByteArrayInputStream(
+                                             tsvData.getBytes(StandardCharsets.UTF_8)))
+                     )) {
+
+            List<Map<String, String>> records = parser.parse();
+
+            assertThat(records).isEmpty();
+        }
+    }
+
+    @Test
+    void parse_multipleRows_returnsAllRecords() throws Exception {
+        String tsvData =
+                "id\tfull_name\tbirth_date\tsex\tcontact_number\taddr_line\taddr_city\taddr_state\n" +
+                "PB001\tJane Doe\t25/12/1990\tF\t555-2020\t34 Pine St\tSeattle\tWA\n" +
+                "PB002\tMark Stone\t15/08/1978\tM\t555-3030\t9 River Rd\tDenver\tCO\n";
+
+        try (MockedConstruction<ClassPathResource> mocked =
+                     mockConstruction(ClassPathResource.class,
+                             (mock, context) -> when(mock.getInputStream())
+                                     .thenReturn(new ByteArrayInputStream(
+                                             tsvData.getBytes(StandardCharsets.UTF_8)))
+                     )) {
+
+            List<Map<String, String>> records = parser.parse();
+
+            assertThat(records).hasSize(2);
+            assertThat(records.get(1).get("id")).isEqualTo("PB002");
+            assertThat(records.get(1).get("full_name")).isEqualTo("Mark Stone");
+            assertThat(records.get(1).get("addr_city")).isEqualTo("Denver");
+        }
+    }
+
+    @Test
+    void parse_addrLineFieldMapped() throws Exception {
+        String tsvData =
+                "id\tfull_name\tbirth_date\tsex\tcontact_number\taddr_line\taddr_city\taddr_state\n" +
+                "PB003\tAlice Brown\t10/05/1985\tF\t555-4040\t5 Maple Ave\tAustin\tTX\n";
+
+        try (MockedConstruction<ClassPathResource> mocked =
+                     mockConstruction(ClassPathResource.class,
+                             (mock, context) -> when(mock.getInputStream())
+                                     .thenReturn(new ByteArrayInputStream(
+                                             tsvData.getBytes(StandardCharsets.UTF_8)))
+                     )) {
+
+            Map<String, String> row = parser.parse().get(0);
+
+            assertThat(row.get("addr_line")).isEqualTo("5 Maple Ave");
+            assertThat(row.get("addr_state")).isEqualTo("TX");
+        }
+    }
+
+    @Test
+    void parseRuntimeException() throws Exception {
         try (MockedConstruction<ClassPathResource> mocked =
                      mockConstruction(ClassPathResource.class,
                              (mock, context) ->
                                      when(mock.getInputStream())
-                                             .thenThrow(new RuntimeException("IO error"))
+                                             .thenThrow(new java.io.IOException("IO error"))
                      )) {
 
             RuntimeException exception = catchThrowableOfType(
@@ -64,7 +124,7 @@ class SourceBPatientParserTest {
 
             assertThat(exception)
                     .hasMessage("Failed to parse source_b_patients.tsv")
-                    .hasCauseInstanceOf(RuntimeException.class);
+                    .hasCauseInstanceOf(java.io.IOException.class);
         }
     }
 }

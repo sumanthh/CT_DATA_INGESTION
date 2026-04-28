@@ -6,12 +6,17 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Component
 @Slf4j
 public class SourceAPatientParser {
+
+    private static final String FILE_PATH = "data/source_a_patients.csv";
+    private static final int MAX_LINES = 10_000;
 
     public List<Map<String, String>> parse() {
         log.info("Reading Source A file: source_a_patients.csv");
@@ -19,15 +24,18 @@ public class SourceAPatientParser {
         try (
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(
-                                new ClassPathResource("data/source_a_patients.csv")
-                                        .getInputStream()
+                                new ClassPathResource(FILE_PATH).getInputStream(),
+                                StandardCharsets.UTF_8
                         )
                 )
         ) {
-            String header = reader.readLine();
+            reader.readLine(); // skip header
             String line;
+            int lineCount = 0;
 
             while ((line = reader.readLine()) != null) {
+                if (++lineCount > MAX_LINES)
+                    throw new IOException("File exceeds maximum allowed lines: " + MAX_LINES);
                 String[] tokens = line.split(",");
                 Map<String, String> row = new HashMap<>();
                 row.put(AppConstants.PATIENT_ID, tokens[0]);
@@ -43,7 +51,7 @@ public class SourceAPatientParser {
                 row.put(AppConstants.ZIP, tokens[10]);
                 records.add(row);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException("Failed to parse source_a_patients.csv", e);
         }
         log.info("Parsed {} records from Source A", records.size());

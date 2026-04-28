@@ -32,7 +32,7 @@ class PatientControllerTest {
     @Mock
     private PatientService patientService;
 
-    @Test
+    /*@Test
     void getAllPatients_success() throws Exception {
         Mockito.when(patientService.getAllPatients(null))
                 .thenReturn(List.of(
@@ -44,6 +44,31 @@ class PatientControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
+    }*/
+
+    @Test
+    void getAllBundlePatients_success() throws Exception {
+        Mockito.when(patientService.getAllBundlePatients(null))
+                .thenReturn(List.of(
+                        Map.of("resourceType", "Patient", "id", "PA001"),
+                        Map.of("resourceType", "Patient", "id", "PA002")
+                ));
+
+        mockMvc.perform(get("/api/patients")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    void getBundlePatients_withUnknownSource_returnsEmptyBundle() throws Exception {
+        mockMvc.perform(get("/api/patients")
+                        .param("source", "UNKNOWN_SOURCE")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].resourceType").value("Bundle"))
+                .andExpect(jsonPath("$[0].total").value(0))
+                .andExpect(jsonPath("$[0].entry", hasSize(0)));
     }
 
     @Test

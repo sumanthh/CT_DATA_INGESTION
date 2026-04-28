@@ -18,16 +18,27 @@ public class PatientController {
         this.service = service;
     }
 
-    @GetMapping
+    /*@GetMapping
     public List<Map<String, Object>> getPatients(
             @RequestParam(required = false) String source) {
         log.info("GET /api/patients called with source={} ", source);
         return service.getAllPatients(source);
-    }
+    }*/
 
     @GetMapping("/{id}")
     public Map<String, Object> getPatient(@PathVariable String id) {
-        log.info("GET /api/patients/{} called with id: ", id);
+        log.info("GET /api/patients/{} called with id: ", sanitize(id));
         return service.getPatientById(id);
+    }
+
+    @GetMapping
+    public List<Map<String, Object>> getBundlePatients(
+            @RequestParam(required = false) String source) {
+        log.info("GET /api/patients called with source={} ", sanitize(source));
+        return service.getAllBundlePatients(source);
+    }
+
+    private String sanitize(String value) {
+        return value == null ? null : value.replaceAll("[\n\r]", "_");
     }
 }

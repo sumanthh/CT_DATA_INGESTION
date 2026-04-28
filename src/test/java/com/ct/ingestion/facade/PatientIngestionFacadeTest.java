@@ -98,6 +98,69 @@ class PatientIngestionFacadeTest {
     }
 
     @Test
+    void ingestAll_onlySourceBHasRecords() {
+        Map<String, String> sourceBRecord = Map.of("id", "PB002");
+
+        PatientEntity pbEntity = new PatientEntity();
+        pbEntity.setId("PB002");
+
+        when(sourceAParser.parse()).thenReturn(List.of());
+        when(sourceBParser.parse()).thenReturn(List.of(sourceBRecord));
+        when(normalizer.fromSourceB(sourceBRecord)).thenReturn(pbEntity);
+        when(repository.existsById("PB002")).thenReturn(false);
+        when(repository.count()).thenReturn(1L);
+
+        facade.ingestAll();
+
+        verify(repository).save(pbEntity);
+        verify(repository, never()).save(argThat(e -> e.getId().startsWith("PA")));
+    }
+
+    @Test
+    void ingestAll_partialSkip_savesOnlyNewRecords() {
+        Map<String, String> newRecord = Map.of("id", "PA003");
+        Map<String, String> existingRecord = Map.of("id", "PA004");
+
+        PatientEntity newEntity = new PatientEntity();
+        newEntity.setId("PA003");
+
+        PatientEntity existingEntity = new PatientEntity();
+        existingEntity.setId("PA004");
+
+        when(sourceAParser.parse()).thenReturn(List.of(newRecord, existingRecord));
+        when(sourceBParser.parse()).thenReturn(List.of());
+        when(normalizer.fromSourceA(newRecord)).thenReturn(newEntity);
+        when(normalizer.fromSourceA(existingRecord)).thenReturn(existingEntity);
+        when(repository.existsById("PA003")).thenReturn(false);
+        when(repository.existsById("PA004")).thenReturn(true);
+        when(repository.count()).thenReturn(1L);
+
+        facade.ingestAll();
+
+        verify(repository).save(newEntity);
+        verify(repository, never()).save(existingEntity);
+    }
+
+    @Test
+    void ingestAll_sourceBExistingPatient_skipped() {
+        Map<String, String> sourceBRecord = Map.of("id", "PB003");
+
+        PatientEntity pbEntity = new PatientEntity();
+        pbEntity.setId("PB003");
+
+        when(sourceAParser.parse()).thenReturn(List.of());
+        when(sourceBParser.parse()).thenReturn(List.of(sourceBRecord));
+        when(normalizer.fromSourceB(sourceBRecord)).thenReturn(pbEntity);
+        when(repository.existsById("PB003")).thenReturn(true);
+        when(repository.count()).thenReturn(1L);
+
+        facade.ingestAll();
+
+        verify(repository, never()).save(any());
+        verify(repository).existsById("PB003");
+    }
+
+    @Test
     void ingestAllEmpty() {
 
         when(sourceAParser.parse()).thenReturn(List.of());

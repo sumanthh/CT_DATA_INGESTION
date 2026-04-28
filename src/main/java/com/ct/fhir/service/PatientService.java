@@ -5,7 +5,8 @@ import java.util.Map;
 
 public interface PatientService {
 
-    List<Map<String, Object>> getAllPatients(String source);
-
     Map<String, Object> getPatientById(String id);
+
+    List<Map<String, Object>> getAllBundlePatients(String source);
+
 }
