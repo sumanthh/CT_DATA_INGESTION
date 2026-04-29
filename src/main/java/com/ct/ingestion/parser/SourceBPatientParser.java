@@ -11,6 +11,18 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * Parser component for Source B patient data (TSV format).
+ * 
+ * Reads and parses the source_b_patients.tsv file from the classpath.
+ * Extracts patient records with full names that need to be split into first and last names.
+ * 
+ * Security features:
+ * - Hardcoded file path prevents path traversal attacks
+ * - Maximum line limit (10,000) prevents denial of service attacks
+ * - Explicit UTF-8 encoding ensures consistent character handling
+ * - Specific IOException handling for proper error reporting
+ */
 @Component
 @Slf4j
 public class SourceBPatientParser {
@@ -18,6 +30,28 @@ public class SourceBPatientParser {
     private static final String FILE_PATH = "data/source_b_patients.tsv";
     private static final int MAX_LINES = 10_000;
 
+    /**
+     * Parses the Source B TSV file and extracts patient records.
+     * 
+     * TSV Format (tab-separated):
+     * id\tfull_name\tbirth_date\tsex\tcontact_number\taddr_line\taddr_city\taddr_state
+     * PB001\tJane Doe\t25/12/1990\tF\t555-2020\t34 Pine St\tSeattle\tWA
+     * 
+     * Process:
+     * 1. Reads TSV file from classpath
+     * 2. Skips header row
+     * 3. Parses each data row by splitting on tabs
+     * 4. Maps tokens to field names using AppConstants
+     * 5. Enforces maximum line limit to prevent DoS attacks
+     * 
+     * Note: Source B data requires normalization:
+     * - Full names must be split into first and last names
+     * - Dates must be converted from DD/MM/YYYY to YYYY-MM-DD
+     * - Gender values (M/F) must be mapped to (male/female)
+     * 
+     * @return A list of maps, each representing a patient record with field names as keys
+     * @throws RuntimeException if file cannot be read or exceeds maximum lines
+     */
     public List<Map<String, String>> parse() {
         log.info("Reading Source B file: source_b_patients.tsv");
         List<Map<String, String>> records = new ArrayList<>();
@@ -34,8 +68,10 @@ public class SourceBPatientParser {
             int lineCount = 0;
 
             while ((line = reader.readLine()) != null) {
+                // Prevent denial of service by limiting file size
                 if (++lineCount > MAX_LINES)
                     throw new IOException("File exceeds maximum allowed lines: " + MAX_LINES);
+                
                 String[] tokens = line.split("\t");
 
                 Map<String, String> row = new HashMap<>();

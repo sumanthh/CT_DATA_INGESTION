@@ -11,6 +11,18 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * Parser component for Source A patient data (CSV format).
+ * 
+ * Reads and parses the source_a_patients.csv file from the classpath.
+ * Extracts patient records with pre-split fields (first_name, last_name, etc.).
+ * 
+ * Security features:
+ * - Hardcoded file path prevents path traversal attacks
+ * - Maximum line limit (10,000) prevents denial of service attacks
+ * - Explicit UTF-8 encoding ensures consistent character handling
+ * - Specific IOException handling for proper error reporting
+ */
 @Component
 @Slf4j
 public class SourceAPatientParser {
@@ -18,6 +30,23 @@ public class SourceAPatientParser {
     private static final String FILE_PATH = "data/source_a_patients.csv";
     private static final int MAX_LINES = 10_000;
 
+    /**
+     * Parses the Source A CSV file and extracts patient records.
+     * 
+     * CSV Format:
+     * patient_id,first_name,last_name,dob,gender,phone,email,street,city,state,zip
+     * PA001,John,Smith,1985-03-12,M,555-1010,john@test.com,12 Oak Ave,Boston,MA,02101
+     * 
+     * Process:
+     * 1. Reads CSV file from classpath
+     * 2. Skips header row
+     * 3. Parses each data row by splitting on commas
+     * 4. Maps tokens to field names using AppConstants
+     * 5. Enforces maximum line limit to prevent DoS attacks
+     * 
+     * @return A list of maps, each representing a patient record with field names as keys
+     * @throws RuntimeException if file cannot be read or exceeds maximum lines
+     */
     public List<Map<String, String>> parse() {
         log.info("Reading Source A file: source_a_patients.csv");
         List<Map<String, String>> records = new ArrayList<>();
@@ -34,8 +63,10 @@ public class SourceAPatientParser {
             int lineCount = 0;
 
             while ((line = reader.readLine()) != null) {
+                // Prevent denial of service by limiting file size
                 if (++lineCount > MAX_LINES)
                     throw new IOException("File exceeds maximum allowed lines: " + MAX_LINES);
+                
                 String[] tokens = line.split(",");
                 Map<String, String> row = new HashMap<>();
                 row.put(AppConstants.PATIENT_ID, tokens[0]);
