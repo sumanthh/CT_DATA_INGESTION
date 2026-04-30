@@ -23,7 +23,8 @@ class PatientNormalizerTest {
         Map<String, String> raw = Map.of("patient_id", "PA001",
                 "SOURCE","SOURCE_A",
                 "first_name", "John",
-                "last_name", "Smith"
+                "last_name", "Smith",
+                "dob", "12-03-1985"
         );
 
         PatientEntity entity = normalizer.fromSourceA(raw);
@@ -32,6 +33,7 @@ class PatientNormalizerTest {
         assertThat(entity.getSource()).isEqualTo("SOURCE_A");
         assertThat(entity.getFirstName()).isEqualTo("John");
         assertThat(entity.getLastName()).isEqualTo("Smith");
+        assertThat(entity.getBirthDate()).isEqualTo("1985-03-12");
 
     }
 
@@ -65,7 +67,7 @@ class PatientNormalizerTest {
                 "patient_id", "PA002",
                 "first_name", "Alex",
                 "last_name", "Taylor",
-                "dob", "1995-01-01",
+                "dob", "01-01-1995",
                 "gender", "X"
         );
 
@@ -81,7 +83,7 @@ class PatientNormalizerTest {
                 "SOURCE", "SOURCE_A",
                 "first_name", "Alice",
                 "last_name", "Brown",
-                "dob", "1990-06-15",
+                "dob", "15-06-1990",
                 "gender", "female",
                 "phone", "555-9999",
                 "email", "alice@test.com",
@@ -104,7 +106,8 @@ class PatientNormalizerTest {
         Map<String, String> raw = Map.of(
                 "patient_id", "PA004",
                 "first_name", "Sam",
-                "last_name", "Lee"
+                "last_name", "Lee",
+                "dob", "05-05-1980"
         );
 
         PatientEntity entity = normalizer.fromSourceA(raw);
@@ -118,6 +121,7 @@ class PatientNormalizerTest {
                 "patient_id", "PA005",
                 "first_name", "Tom",
                 "last_name", "Jones",
+                "dob", "10-10-1975",
                 "gender", "MALE"
         );
 
@@ -130,6 +134,7 @@ class PatientNormalizerTest {
                 "patient_id", "PA006",
                 "first_name", "Nina",
                 "last_name", "Ross",
+                "dob", "20-08-1988",
                 "gender", "FEMALE"
         );
 

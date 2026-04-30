@@ -12,18 +12,20 @@ import java.util.Map;
  * Normalizer component that converts raw patient data from different sources into a unified schema.
  * 
  * Handles data transformation for two heterogeneous sources:
- * - Source A: CSV with pre-split fields and YYYY-MM-DD date format
+ * - Source A: CSV with pre-split fields and DD-MM-YYYY date format
  * - Source B: TSV with full names and DD/MM/YYYY date format
  * 
  * Normalization includes:
  * - Name splitting (Source B only)
- * - Date format conversion (Source B: DD/MM/YYYY → YYYY-MM-DD)
+ * - Date format conversion (Source A: DD-MM-YYYY → YYYY-MM-DD, Source B: DD/MM/YYYY → YYYY-MM-DD)
  * - Gender mapping (M/F/MALE/FEMALE → male/female/unknown)
  * - Field mapping to unified schema
  */
 @Component
 public class PatientNormalizer {
 
+    private static final DateTimeFormatter SOURCE_A_DATE =
+            DateTimeFormatter.ofPattern("dd-MM-yyyy");
     private static final DateTimeFormatter SOURCE_B_DATE =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -32,7 +34,7 @@ public class PatientNormalizer {
      * 
      * Source A format:
      * - Fields are already split (first_name, last_name)
-     * - Date is already in YYYY-MM-DD format
+     * - Date is in DD-MM-YYYY format and must be converted to YYYY-MM-DD
      * - Gender is single character (M/F) or full word (MALE/FEMALE)
      * - Email and zip are included
      * 
@@ -46,7 +48,10 @@ public class PatientNormalizer {
         p.setSource(AppConstants.SOURCE_A);
         p.setFirstName(raw.get(AppConstants.FIRST_NAME));
         p.setLastName(raw.get(AppConstants.LAST_NAME));
-        p.setBirthDate(raw.get(AppConstants.DOB)); // already YYYY-MM-DD
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD
+        p.setBirthDate(
+                LocalDate.parse(raw.get(AppConstants.DOB), SOURCE_A_DATE).toString()
+        );
         p.setGender(normalizeGender(raw.get(AppConstants.GENDER)));
         p.setPhone(raw.get(AppConstants.PHONE));
         p.setEmail(raw.get(AppConstants.EMAIL));
@@ -90,7 +95,7 @@ public class PatientNormalizer {
         p.setEmail(null); // Source B does not provide email
         p.setAddressLine(raw.get(AppConstants.ADDR_LINE));
         p.setCity(raw.get(AppConstants.ADDR_CITY));
-        p.setState(raw.get(AppConstants.STATE));
+        p.setState(raw.get(AppConstants.ADDR_STATE));
         p.setZip(null); // Source B does not provide zip
 
         return p;

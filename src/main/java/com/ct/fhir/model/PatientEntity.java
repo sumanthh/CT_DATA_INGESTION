@@ -55,6 +55,7 @@ public class PatientEntity {
     @Column(nullable = false)
     private String city;
 
+    @Column(nullable = false)
     private String state;
 
     private String zip;
